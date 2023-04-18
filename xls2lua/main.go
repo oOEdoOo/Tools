@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/tealeg/xlsx/v3"
 )
@@ -71,18 +71,22 @@ func main() {
 			// 根据单元格的类型进行转换
 			switch cell.Type() {
 			case xlsx.CellTypeNumeric:
-				if strings.Contains(value, ".") {
-					f, _ := strconv.ParseFloat(value, 64)
-					value = fmt.Sprintf("%f", f)
+				f, _ := strconv.ParseFloat(value, 64)
+
+				if f == math.Floor(f) {
+					value = fmt.Sprintf("%.0f", f)
 				} else {
-					i, _ := strconv.ParseInt(value, 10, 64)
-					value = fmt.Sprintf("%d", i)
+					value = fmt.Sprintf("%f", f)
 				}
+
+				data += fmt.Sprintf("        %s = %s,\n", colNames[colIndex], value)
 			case xlsx.CellTypeBool:
 				value = fmt.Sprintf("%t", cell.Bool())
-			}
 
-			data += fmt.Sprintf("        %s = %q,\n", colNames[colIndex], value)
+				data += fmt.Sprintf("        %s = %q,\n", colNames[colIndex], value)
+			default:
+				data += fmt.Sprintf("        %s = %q,\n", colNames[colIndex], value)
+			}
 		}
 		data += "    },\n"
 	}
